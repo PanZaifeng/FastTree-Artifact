@@ -1,0 +1,6 @@
+__pycache__
+outputs*
+plans
+trees
+parsed_output.md
+norm_perf.pdf
