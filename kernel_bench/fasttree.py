@@ -154,7 +154,7 @@ def fasttree_preparation(
                 kv_len += tree_info[node].seqlen
 
             phase = 0 if req_num > Q_TILE_SIZE_PER_PHASE[1] else 1
-            q_vnode_count = (req_num - 1) // Q_TILE_SIZE_PER_PHASE[0] + 1
+            q_vnode_count = (req_num - 1) // Q_TILE_SIZE_PER_PHASE[phase] + 1
             kv_vnode_count = (kv_len - 1) // KV_SPLIT_SIZE_PER_PHASE[phase] + 1
             parallelisms[phase] += kv_vnode_count * q_vnode_count
         parallelisms = [p * num_kv_heads for p in parallelisms]
@@ -178,17 +178,13 @@ def fasttree_preparation(
                 break
         elif i == 1:
             if parallelisms[0] > 0 and parallelisms[0] < para_threshs2[0]:
-                Q_TILE_SIZE_PER_PHASE = [
-                    Q_TILE_SIZE_PER_PHASE[1],
-                    Q_TILE_SIZE_PER_PHASE[1],
-                ]
+                Q_TILE_SIZE_PER_PHASE = [Q_TILE_SIZE_PER_PHASE[1] for _ in range(2)]
                 params.set_q_tile_sizes(Q_TILE_SIZE_PER_PHASE)
+                params.set_kv_tile_sizes([params.TSKs[1] for _ in range(2)])
             elif parallelisms[1] > 0 and parallelisms[1] < para_threshs2[1]:
-                Q_TILE_SIZE_PER_PHASE = [
-                    Q_TILE_SIZE_PER_PHASE[0],
-                    Q_TILE_SIZE_PER_PHASE[0],
-                ]
+                Q_TILE_SIZE_PER_PHASE = [Q_TILE_SIZE_PER_PHASE[0] for _ in range(2)]
                 params.set_q_tile_sizes(Q_TILE_SIZE_PER_PHASE)
+                params.set_kv_tile_sizes([params.TSKs[0] for _ in range(2)])
             else:
                 break
 
@@ -392,7 +388,8 @@ def _fwd_fasttree_decode_stage1(
         logic_scale = tl.exp(max_logics - new_max_logics)
 
         sum_exp = sum_exp * logic_scale + tl.sum(exp_logics, axis=1)[:, None]
-        acc = acc * logic_scale + tl.dot(exp_logics.to(tl.float16), v)
+        acc = acc * logic_scale
+        acc = tl.dot(exp_logics.to(v.type), v, acc)
         max_logics = new_max_logics
 
     off_mid_o = (
@@ -546,7 +543,7 @@ def _fwd_fasttree_decoding_stage2(
 
     tl.store(
         O + cur_req * stride_o0 + cur_head * stride_o1 + offs_d,
-        tl.cast(tl.ravel(acc / sum_exp), dtype=tl.float16),
+        tl.ravel(acc / sum_exp).to(O.type.element_ty),
     )
 
 
