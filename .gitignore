@@ -4,3 +4,7 @@ plans
 trees
 parsed_output.md
 norm_perf.pdf
+*egg-info
+breakdowns/
+logs/
+plots/outputs/
