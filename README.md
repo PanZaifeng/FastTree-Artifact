@@ -2,7 +2,7 @@
 
 This repository provides the artifact for ***[MLSys'25]** FastTree: Optimizing Attention Kernel and Runtime for Tree-Structured LLM Inference*.
 
-FastTree is implemented as an SGLang plugin to accelerate attention computation with the given radix tree for KV cache. This repository includes the kernel benchmark code from the paper, as well as end-to-end benchmark scripts (still being organized and to be released).
+FastTree is implemented as an SGLang plugin to accelerate attention computation with the given radix tree for KV cache. This repository includes the kernel benchmark code from the paper, as well as end-to-end benchmark scripts.
 
 <p align="center">
   <img src="./assets/overview.png" style="width:50%">
