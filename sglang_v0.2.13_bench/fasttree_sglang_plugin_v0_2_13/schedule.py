@@ -68,7 +68,6 @@ def prepare_for_fasttree_meta(
         return (
             Cmm(nQcurr, lenv)
             + Cmm(nQl, lenl)
-            - Cmm(nQl, lenv + lenl)
             + Cred(nQl, lenl, lenv)
         )
 

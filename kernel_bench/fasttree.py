@@ -57,7 +57,6 @@ def _SplitKCost(nQcurr, nQl, lenl, lenv, params: FastTreeParams):
     return (
         _Cmm(nQcurr, lenv, params)
         + _Cmm(nQl, lenl, params)
-        - _Cmm(nQl, lenv + lenl, params)
         + _Cred(nQl, params, lenl, lenv)
     )
 
